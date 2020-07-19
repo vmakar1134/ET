@@ -1,19 +1,21 @@
 package com.eventsterminal.server.controller;
 
+import com.eventsterminal.server.config.dto.Oauth2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
-import java.util.List;
-
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/")
 public class Test {
 
+    @Autowired
+    private Oauth2 oauth2;
+
     @GetMapping("test")
-    public List<String> test(){
-        return Arrays.asList("one", "two", "three");
+    public Oauth2 test() {
+        return oauth2;
     }
 
 }
