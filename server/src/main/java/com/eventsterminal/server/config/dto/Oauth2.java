@@ -1,27 +1,37 @@
 package com.eventsterminal.server.config.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Oauth2 {
 
-    private List<RedirectUrl> redirect;
+    private List<String> pathParam = new ArrayList<>();
 
-    public Oauth2() {
+    private String path;
+
+    public List<String> getPathParam() {
+        return pathParam;
     }
 
-    public List<RedirectUrl> getRedirect() {
-        return redirect;
+    public void setPathParam(List<String> pathParam) {
+        this.pathParam = pathParam;
     }
 
-    public void setRedirect(List<RedirectUrl> redirect) {
-        this.redirect = redirect;
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     @Override
     public String toString() {
         return "Oauth2{" +
-                "redirectUrlList=" + redirect +
+                "pathParam=" + pathParam +
+                ", path='" + path + '\'' +
                 '}';
     }
 
 }
+
