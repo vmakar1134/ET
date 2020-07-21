@@ -1,0 +1,8 @@
+<ng-container *ngIf="authIsLoaded">
+  <button *ngIf="!isLoggedIn" (click)="signIn()">Sign In With Google</button>
+  <button *ngIf="isLoggedIn" (click)="signOut()">Sign Out</button>
+  <h5>is LoggedIn = {{isLoggedIn}}</h5>
+  <h5>user = {{user}}</h5>
+
+</ng-container>
+<h2 *ngIf="authIsLoaded && isLoggedIn"> Signed in as {{user.name}} </h2>

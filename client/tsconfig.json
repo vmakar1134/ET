@@ -1,6 +1,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "typeRoots": [
+      "node_modules/@types"],
+    "types": ["gapi", "gapi.auth2"],
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
