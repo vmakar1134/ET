@@ -1,6 +1,6 @@
 package com.eventsterminal.server.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.eventsterminal.server.config.handler.CustomAuthenticationSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -32,33 +32,34 @@ import java.util.stream.Collectors;
 @PropertySource("application-oauth2.properties")
 public class AuthConfig extends WebSecurityConfigurerAdapter {
 
-    private static List<String> clients = Arrays.asList("google", "facebook");
+    // TODO: 7/22/20 from config (review)
+    private static final List<String> CLIENTS = Arrays.asList("google", "facebook");
 
     private static final String CLIENT_PROPERTY_KEY = "spring.security.oauth2.client.registration.";
 
     private final Environment env;
 
-    @Autowired
-    CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
-    public AuthConfig(Environment env) {
+    public AuthConfig(Environment env, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler) {
         this.env = env;
+        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // TODO: 7/21/20 refactor endpoints
+        // TODO: 7/21/20 review endpoints
         http
                 .authorizeRequests()
                 // TODO: 7/22/20 to config
-                .antMatchers("/login", "/loginFailure")
+                .antMatchers("/auth-login", "/loginFailure")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
                 .oauth2Login()
                 // TODO: 7/22/20 to config
-                .loginPage("/login")
+                .loginPage("/auth-login")
                 .authorizationEndpoint()
                 // TODO: 7/22/20 to config
                 .baseUri("/oauth2/authorize-client")
@@ -93,7 +94,7 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
-        List<ClientRegistration> registrations = clients.stream()
+        List<ClientRegistration> registrations = CLIENTS.stream()
                 .map(this::getRegistration)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

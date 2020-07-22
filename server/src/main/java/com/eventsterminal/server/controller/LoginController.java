@@ -38,7 +38,7 @@ public class LoginController {
     @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
 
-    @GetMapping("/login")
+    @GetMapping("/auth-login")
     public String getLoginPage(Model model) {
         // TODO: 7/21/20 to service (probably to filter)
         // TODO: 7/22/20 to rest
