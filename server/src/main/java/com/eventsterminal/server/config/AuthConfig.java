@@ -83,10 +83,9 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                 // TODO: 7/22/20 POST request (review)
-                // TODO: 7/22/20 NOT WORKING
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
-                // TODO: 7/22/20 review
                 .clearAuthentication(true)
+                .invalidateHttpSession(true)
                 .and()
                 .csrf()
                 .disable();

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -78,9 +77,8 @@ public class LoginController {
 
     // TODO: 7/21/20 remove, for test only
     @GetMapping("/home")
-    @ResponseBody
     public String home(OAuth2AuthenticationToken authenticationToken) {
-        return authenticationToken.toString();
+        return "login_success";
     }
 
 }
