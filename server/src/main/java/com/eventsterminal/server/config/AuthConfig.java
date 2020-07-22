@@ -1,5 +1,6 @@
 package com.eventsterminal.server.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -8,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
@@ -21,6 +23,8 @@ import org.springframework.security.oauth2.client.web.HttpSessionOAuth2Authoriza
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +41,9 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 
     private final Environment env;
 
+    @Autowired
+    CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+
     public AuthConfig(Environment env) {
         this.env = env;
     }
@@ -44,22 +51,26 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // TODO: 7/21/20 refactor endpoints
-        http.authorizeRequests()
+        http
+                .authorizeRequests()
+                // TODO: 7/22/20 to config
                 .antMatchers("/login", "/loginFailure")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
                 .oauth2Login()
+                // TODO: 7/22/20 to config
                 .loginPage("/login")
                 .authorizationEndpoint()
+                // TODO: 7/22/20 to config
                 .baseUri("/oauth2/authorize-client")
                 .authorizationRequestRepository(authorizationRequestRepository())
                 .and()
                 .tokenEndpoint()
                 .accessTokenResponseClient(accessTokenResponseClient())
                 .and()
-                .defaultSuccessUrl("/login_success")
+                .successHandler(customAuthenticationSuccessHandler)
                 .failureUrl("/loginFailure")
                 .and()
                 .logout()
@@ -68,6 +79,16 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .csrf()
                 .disable();
+    }
+
+    @Bean
+    public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
+        return new HttpSessionOAuth2AuthorizationRequestRepository();
+    }
+
+    @Bean
+    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient() {
+        return new DefaultAuthorizationCodeTokenResponseClient();
     }
 
     @Bean
@@ -81,20 +102,7 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public OAuth2AuthorizedClientService authorizedClientService() {
-        return new InMemoryOAuth2AuthorizedClientService(
-                clientRegistrationRepository());
-    }
-
-    @Bean
-    public AuthorizationRequestRepository<OAuth2AuthorizationRequest>
-    authorizationRequestRepository() {
-        return new HttpSessionOAuth2AuthorizationRequestRepository();
-    }
-
-    @Bean
-    public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest>
-    accessTokenResponseClient() {
-        return new DefaultAuthorizationCodeTokenResponseClient();
+        return new InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository());
     }
 
     // TODO: 7/21/20 refactor null response

@@ -41,6 +41,7 @@ public class LoginController {
     @GetMapping("/login")
     public String getLoginPage(Model model) {
         // TODO: 7/21/20 to service (probably to filter)
+        // TODO: 7/22/20 to rest
         Iterable<ClientRegistration> clientRegistrations = null;
         ResolvableType type = ResolvableType.forInstance(clientRegistrationRepository)
                 .as(Iterable.class);
@@ -54,7 +55,7 @@ public class LoginController {
 
     @GetMapping("/login_success")
     public String getLoginInfo(Model model, OAuth2AuthenticationToken authentication) {
-        // TODO: 7/21/20 to service (probably to filter)
+        // TODO: 7/22/20 move logic to CustomAuthtenticationSuccessHandlerService
         OAuth2AuthorizedClient client = authorizedClientService
                 .loadAuthorizedClient(
                         authentication.getAuthorizedClientRegistrationId(),
@@ -77,7 +78,7 @@ public class LoginController {
     }
 
     // TODO: 7/21/20 remove, for test only
-    @GetMapping("/")
+    @GetMapping("/home")
     @ResponseBody
     public String home() {
         return "HOME";
