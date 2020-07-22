@@ -1,6 +1,5 @@
 package com.eventsterminal.server.config.model;
 
-
 import javax.persistence.*;
 
 @Entity

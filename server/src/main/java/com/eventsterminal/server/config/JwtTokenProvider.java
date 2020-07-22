@@ -1,6 +1,6 @@
 package com.eventsterminal.server.config;
 
-import com.eventsterminal.server.config.model.UserPrincipal;
+import com.eventsterminal.server.config.model.UserAuth;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -10,9 +10,9 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 @Component
-public class TokenProvider {
+public class JwtTokenProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(TokenProvider.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JwtTokenProvider.class.getName());
 
     @Value("${app.jwtSecret}")
     private String SECRET_KEY;
@@ -21,7 +21,7 @@ public class TokenProvider {
     private Long EXPIRATION_TIME;
 
     public String generateToken(Authentication authentication) {
-        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+        UserAuth principal = (UserAuth) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject(Long.toString(principal.getId()))

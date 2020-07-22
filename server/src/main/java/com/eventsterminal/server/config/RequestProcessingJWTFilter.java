@@ -1,5 +1,6 @@
 package com.eventsterminal.server.config;
 
+import com.eventsterminal.server.config.model.UserAuth;
 import com.eventsterminal.server.config.service.impl.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,24 +20,25 @@ import java.io.IOException;
 @Component
 public class RequestProcessingJWTFilter extends OncePerRequestFilter {
 
-    private final TokenProvider tokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
 
     private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    public RequestProcessingJWTFilter(TokenProvider tokenProvider, CustomUserDetailsService customUserDetailsService) {
-        this.tokenProvider = tokenProvider;
+    public RequestProcessingJWTFilter(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService customUserDetailsService) {
+        this.jwtTokenProvider = jwtTokenProvider;
         this.customUserDetailsService = customUserDetailsService;
     }
 
+    // TODO: 7/22/20 to AuthConfig
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String jwt = getJwtFromRequest(request);
         try {
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                Long id = tokenProvider.getUserAuthIdFromToken(jwt);
+            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
+                Long id = jwtTokenProvider.getUserAuthIdFromToken(jwt);
                 UserDetails userDetails = customUserDetailsService.loadUserById(id);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(new UserAuth(), "", userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }

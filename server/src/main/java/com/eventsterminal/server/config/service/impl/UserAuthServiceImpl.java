@@ -1,10 +1,9 @@
 package com.eventsterminal.server.config.service.impl;
 
-import com.eventsterminal.server.config.TokenProvider;
+import com.eventsterminal.server.config.JwtTokenProvider;
 import com.eventsterminal.server.config.model.Role;
 import com.eventsterminal.server.config.model.Roles;
 import com.eventsterminal.server.config.model.UserAuth;
-import com.eventsterminal.server.config.model.UserPrincipal;
 import com.eventsterminal.server.config.service.UserAuthService;
 import com.eventsterminal.server.domain.request.AuthenticateRequest;
 import com.eventsterminal.server.exception.ConflictException;
@@ -27,18 +26,18 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final TokenProvider tokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
 
     private final AuthenticationManager authenticationManager;
 
     private final RoleRepository roleRepository;
 
     public UserAuthServiceImpl(UserAuthRepository userAuthRepository, PasswordEncoder passwordEncoder,
-                               TokenProvider tokenProvider, AuthenticationManager authenticationManager,
+                               JwtTokenProvider jwtTokenProvider, AuthenticationManager authenticationManager,
                                RoleRepository roleRepository) {
         this.userAuthRepository = userAuthRepository;
         this.passwordEncoder = passwordEncoder;
-        this.tokenProvider = tokenProvider;
+        this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
         this.roleRepository = roleRepository;
     }
@@ -60,19 +59,18 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     @Override
     public String login(AuthenticateRequest loginRequest) {
-        Authentication authenticate = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getLogin(),
-                        loginRequest.getPassword()
-                )
-        );
+        Authentication authenticate = authenticationManager.authenticate(getAuthentication(loginRequest));
         SecurityContextHolder.getContext().setAuthentication(authenticate);
-        return tokenProvider.generateToken(authenticate);
+        return jwtTokenProvider.generateToken(authenticate);
+    }
+
+    private UsernamePasswordAuthenticationToken getAuthentication(AuthenticateRequest loginRequest) {
+        return new UsernamePasswordAuthenticationToken(loginRequest.getLogin(), loginRequest.getPassword());
     }
 
     @Override
     public UserAuth getCurrentUser() {
-        UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserAuth principal = (UserAuth) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userAuthRepository.findById(principal.getId())
                 .orElseThrow(() -> new NotFoundException("No user in security context"));
     }
