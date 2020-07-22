@@ -61,7 +61,7 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 // TODO: 7/22/20 to config
-                .antMatchers("/auth/login", "/loginFailure")
+                .antMatchers("/auth/login", "/auth/login/fail")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
@@ -79,7 +79,7 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .successHandler(customAuthenticationSuccessHandler)
                 // TODO: 7/22/20 add handler
-                .failureUrl("/loginFailure")
+                .failureUrl("/auth/login/fail")
                 .and()
                 .logout()
                 // TODO: 7/22/20 POST request (review)
