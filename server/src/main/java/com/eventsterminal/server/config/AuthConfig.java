@@ -1,14 +1,20 @@
 package com.eventsterminal.server.config;
 
 import com.eventsterminal.server.config.handler.CustomAuthenticationSuccessHandler;
+import com.eventsterminal.server.config.service.impl.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.BeanIds;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
@@ -39,11 +45,14 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 
     private final Environment env;
 
-    final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
-    public AuthConfig(Environment env, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler) {
+    private final CustomUserDetailsService customUserDetailsService;
+
+    public AuthConfig(Environment env, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler, CustomUserDetailsService customUserDetailsService) {
         this.env = env;
         this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Override
@@ -74,12 +83,30 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                 // TODO: 7/22/20 POST request (review)
+                // TODO: 7/22/20 NOT WORKING
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                 // TODO: 7/22/20 review
                 .clearAuthentication(true)
                 .and()
                 .csrf()
                 .disable();
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(customUserDetailsService)
+                .passwordEncoder(passwordEncoder());
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Override
+    @Bean(BeanIds.AUTHENTICATION_MANAGER)
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 
     @Bean

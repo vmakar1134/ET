@@ -1,5 +1,6 @@
-package com.eventsterminal.server.config.service;
+package com.eventsterminal.server.config.service.impl;
 
+import com.eventsterminal.server.config.service.ExtractService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.stereotype.Service;
