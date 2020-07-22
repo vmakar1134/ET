@@ -61,14 +61,14 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 // TODO: 7/22/20 to config
-                .antMatchers("/auth-login", "/loginFailure")
+                .antMatchers("/auth/login", "/loginFailure")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
                 .oauth2Login()
                 // TODO: 7/22/20 to config
-                .loginPage("/auth-login")
+                .loginPage("/auth/login")
                 .authorizationEndpoint()
                 // TODO: 7/22/20 to config
                 .baseUri("/oauth2/authorize-client")
