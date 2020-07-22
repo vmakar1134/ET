@@ -9,7 +9,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
@@ -23,8 +22,6 @@ import org.springframework.security.oauth2.client.web.HttpSessionOAuth2Authoriza
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -71,10 +68,13 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
                 .accessTokenResponseClient(accessTokenResponseClient())
                 .and()
                 .successHandler(customAuthenticationSuccessHandler)
+                // TODO: 7/22/20 add handler
                 .failureUrl("/loginFailure")
                 .and()
                 .logout()
+                // TODO: 7/22/20 POST request (review)
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                // TODO: 7/22/20 review
                 .clearAuthentication(true)
                 .and()
                 .csrf()

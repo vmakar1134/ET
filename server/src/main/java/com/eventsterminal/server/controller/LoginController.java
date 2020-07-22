@@ -43,8 +43,7 @@ public class LoginController {
         // TODO: 7/21/20 to service (probably to filter)
         // TODO: 7/22/20 to rest
         Iterable<ClientRegistration> clientRegistrations = null;
-        ResolvableType type = ResolvableType.forInstance(clientRegistrationRepository)
-                .as(Iterable.class);
+        ResolvableType type = ResolvableType.forInstance(clientRegistrationRepository).as(Iterable.class);
         if (type != ResolvableType.NONE && ClientRegistration.class.isAssignableFrom(type.resolveGenerics()[0])) {
             clientRegistrations = (Iterable<ClientRegistration>) clientRegistrationRepository;
         }
@@ -80,8 +79,8 @@ public class LoginController {
     // TODO: 7/21/20 remove, for test only
     @GetMapping("/home")
     @ResponseBody
-    public String home() {
-        return "HOME";
+    public String home(OAuth2AuthenticationToken authenticationToken) {
+        return authenticationToken.toString();
     }
 
 }
