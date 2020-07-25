@@ -71,11 +71,11 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .oauth2Login()
-                // TODO: 7/22/20 to config
+                // TODO: 7/22/20 to client
                 .loginPage("/login")
                 .authorizationEndpoint()
-                // TODO: 7/22/20 to config
-                .baseUri("/oauth2/authorize-client")
+                // TODO: 7/22/20 set baseUri to config
+                .baseUri("/auth/client")
                 .authorizationRequestRepository(authorizationRequestRepository())
                 .and()
                 .tokenEndpoint()

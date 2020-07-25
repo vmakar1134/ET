@@ -1,6 +1,5 @@
 package com.eventsterminal.server.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ResolvableType;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -29,13 +28,14 @@ public class LoginController {
 
     Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
 
-    // TODO: 7/21/20 to constructor
-    @Autowired
-    private ClientRegistrationRepository clientRegistrationRepository;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    // TODO: 7/21/20 to constructor
-    @Autowired
-    private OAuth2AuthorizedClientService authorizedClientService;
+    private final OAuth2AuthorizedClientService authorizedClientService;
+
+    public LoginController(ClientRegistrationRepository clientRegistrationRepository, OAuth2AuthorizedClientService authorizedClientService) {
+        this.clientRegistrationRepository = clientRegistrationRepository;
+        this.authorizedClientService = authorizedClientService;
+    }
 
     @GetMapping("/login")
     public String getLoginPage(Model model) {
