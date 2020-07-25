@@ -26,6 +26,7 @@ import org.springframework.security.oauth2.client.registration.InMemoryClientReg
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.Arrays;
@@ -49,10 +50,13 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 
     private final CustomUserDetailsService customUserDetailsService;
 
-    public AuthConfig(Environment env, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler, CustomUserDetailsService customUserDetailsService) {
+    private final RequestProcessingJWTFilter requestProcessingJWTFilter;
+
+    public AuthConfig(Environment env, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler, CustomUserDetailsService customUserDetailsService, RequestProcessingJWTFilter requestProcessingJWTFilter) {
         this.env = env;
         this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
         this.customUserDetailsService = customUserDetailsService;
+        this.requestProcessingJWTFilter = requestProcessingJWTFilter;
     }
 
     @Override
@@ -89,6 +93,8 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .csrf()
                 .disable();
+
+        http.addFilterBefore(requestProcessingJWTFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override

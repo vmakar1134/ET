@@ -1,6 +1,7 @@
 package com.eventsterminal.server.config.handler;
 
 import com.eventsterminal.server.config.service.ExtractService;
+import com.eventsterminal.server.repository.UserAuthRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -15,16 +16,15 @@ public class CustomAuthenticationSuccessHandler extends SavedRequestAwareAuthent
 
     private final ExtractService extractService;
 
-    public CustomAuthenticationSuccessHandler(ExtractService extractService) {
+    public CustomAuthenticationSuccessHandler(ExtractService extractService, UserAuthRepository userAuthRepository) {
         this.extractService = extractService;
     }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
+        extractService.saveDataFromOauthSession(authentication);
         super.setDefaultTargetUrl("/home");
         super.onAuthenticationSuccess(request, response, authentication);
-        // TODO: 7/22/20 save new user to database
-        Object o = extractService.extractPrincipal(authentication);
     }
 
 }

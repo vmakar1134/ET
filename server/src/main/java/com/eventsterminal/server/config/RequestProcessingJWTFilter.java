@@ -1,8 +1,6 @@
 package com.eventsterminal.server.config;
 
-import com.eventsterminal.server.config.model.UserAuth;
 import com.eventsterminal.server.config.service.impl.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +22,6 @@ public class RequestProcessingJWTFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService customUserDetailsService;
 
-    @Autowired
     public RequestProcessingJWTFilter(JwtTokenProvider jwtTokenProvider, CustomUserDetailsService customUserDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.customUserDetailsService = customUserDetailsService;
@@ -32,20 +29,18 @@ public class RequestProcessingJWTFilter extends OncePerRequestFilter {
 
     // TODO: 7/22/20 to AuthConfig
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
         String jwt = getJwtFromRequest(request);
-        try {
-            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
-                Long id = jwtTokenProvider.getUserAuthIdFromToken(jwt);
-                UserDetails userDetails = customUserDetailsService.loadUserById(id);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(new UserAuth(), "", userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!jwtTokenProvider.isTokenValid(jwt)) {
+            doFilter(request, response, filterChain);
+            return;
         }
-        filterChain.doFilter(request, response);
+        Long id = jwtTokenProvider.getUserAuthIdFromToken(jwt);
+        UserDetails userDetails = customUserDetailsService.loadUserById(id);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        doFilter(request, response, filterChain);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
@@ -54,6 +49,15 @@ public class RequestProcessingJWTFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    // TODO: 7/25/20 add exception message to logger
+    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
+        try {
+            filterChain.doFilter(request, response);
+        } catch (IOException | ServletException e) {
+            e.printStackTrace();
+        }
     }
 
 }
