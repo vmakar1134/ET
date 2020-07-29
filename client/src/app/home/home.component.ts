@@ -1,0 +1,21 @@
+import {Component} from '@angular/core';
+import {first} from 'rxjs/operators';
+import {UserProfile} from '../models';
+import {UserService} from '../_services';
+
+@Component({templateUrl: 'home.component.html'})
+export class HomeComponent {
+  loading = false;
+  users: UserProfile[];
+
+  constructor(private userService: UserService) {
+  }
+
+  ngOnInit() {
+    this.loading = false;
+    this.userService.getAll().pipe(first()).subscribe(users => {
+      this.loading = false;
+      this.users = users;
+    });
+  }
+}

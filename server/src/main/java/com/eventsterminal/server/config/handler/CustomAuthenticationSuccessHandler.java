@@ -23,6 +23,7 @@ public class CustomAuthenticationSuccessHandler extends SavedRequestAwareAuthent
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
         extractService.saveDataFromOauthSession(authentication);
+        response.setHeader("Access-Control-Allow-Origin", "*");
         super.setDefaultTargetUrl("/home");
         super.onAuthenticationSuccess(request, response, authentication);
     }

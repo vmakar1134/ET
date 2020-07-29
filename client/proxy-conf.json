@@ -1,5 +1,18 @@
 {
-  "/api":{
+  "/api": {
+    "target": "http://localhost:8080",
+    "secure": false
+  },
+  "/google/*": {
+    "target": "http://localhost:8080/auth/client/google",
+    "secure": false,
+    "pathRewrite": {
+      "^/google": ""
+    },
+    "changeOrigin": true
+  },
+
+  "/test": {
     "target": "http://localhost:8080",
     "secure": false
   }
