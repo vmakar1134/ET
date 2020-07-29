@@ -1,9 +1,15 @@
 package com.eventsterminal.server.domain.request;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+
 public class AuthenticateRequest {
 
+    @NotNull
+    @Email
     private String login;
 
+    @NotNull
     private String password;
 
     public String getLogin() {

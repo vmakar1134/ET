@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Collections;
 
 @Service
@@ -43,9 +44,10 @@ public class UserAuthServiceImpl implements UserAuthService {
     }
 
     @Override
+    @Transactional
     public void register(AuthenticateRequest registerRequest) {
         if (userAuthRepository.existsByEmail(registerRequest.getLogin())) {
-            throw new ConflictException("Login already registered");
+            throw new ConflictException("Email already registered");
         }
 
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());

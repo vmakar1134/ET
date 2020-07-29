@@ -28,6 +28,9 @@ import org.springframework.security.oauth2.client.web.HttpSessionOAuth2Authoriza
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,7 +55,8 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 
     private final RequestProcessingJWTFilter requestProcessingJWTFilter;
 
-    public AuthConfig(Environment env, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler, CustomUserDetailsService customUserDetailsService, RequestProcessingJWTFilter requestProcessingJWTFilter) {
+    public AuthConfig(Environment env, CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
+                      CustomUserDetailsService customUserDetailsService, RequestProcessingJWTFilter requestProcessingJWTFilter) {
         this.env = env;
         this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
         this.customUserDetailsService = customUserDetailsService;
@@ -63,16 +67,18 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         // TODO: 7/21/20 review endpoints
         http
+                .cors()
+                .configurationSource(corsConfigurationSource())
+                .and()
                 .authorizeRequests()
                 // TODO: 7/22/20 to config
-                .antMatchers("/login", "/auth/login/fail")
+                .antMatchers("/test/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()
                 .oauth2Login()
                 // TODO: 7/22/20 to client
-                .loginPage("/login")
                 .authorizationEndpoint()
                 // TODO: 7/22/20 set baseUri to config
                 .baseUri("/auth/client")
@@ -87,7 +93,7 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout()
                 // TODO: 7/22/20 POST request (review)
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                .logoutRequestMatcher(new AntPathRequestMatcher("/auth/logout", "GET"))
                 .clearAuthentication(true)
                 .invalidateHttpSession(true)
                 .and()
@@ -136,6 +142,13 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public OAuth2AuthorizedClientService authorizedClientService() {
         return new InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository());
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+        return source;
     }
 
     // TODO: 7/21/20 refactor null response
