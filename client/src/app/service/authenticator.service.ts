@@ -1,7 +1,8 @@
 /// <reference types="@types/gapi" />
+/// <reference types="@types/gapi.auth2" />
 import {Injectable, NgZone} from '@angular/core';
-import {BehaviorSubject, Observable} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {User} from '../model/user';
 import GoogleAuth = gapi.auth2.GoogleAuth;
 
@@ -15,15 +16,21 @@ export class AuthenticatorService {
   constructor(private zone: NgZone, private http: HttpClient) {
   }
 
-  validateToken(token: string): Observable<User> {
-    return this.http.get<User>(`http://yourServer:3000/validationApi/${token}`);
+  validateToken(token: string) {
+    return this.http.get<null>(`http://localhost:4200/auth/google`, {
+      headers: new HttpHeaders({
+        ID_TOKEN: token
+      })
+    });
   }
 
   signIn(): void {
     this.auth2.signIn().then(user => {
+      this.validateToken('tset');
       this.isLoggedIn$.next(true);
-      this.user$.next(user);
-      console.log(user);
+      const token = user.getAuthResponse(true).id_token;
+      this.validateToken(token).subscribe(x => console.log('token'),
+        (error => console.log(error)));
     });
 
   }
@@ -42,17 +49,14 @@ export class AuthenticatorService {
 
   loadAuth2(): void {
     gapi.load('auth2', () => {
-      // @ts-ignore
       gapi.auth2.init({
         client_id: '474387750961-ochjmdj1lils7tt350h8oo9ul25hkla6.apps.googleusercontent.com',
-        fetch_basic_profile: false,
-        scope: 'openid'
+        redirect_uri: 'http://localhost:4200/auth/client',
+        ux_mode: 'popup'
       }).then((auth) => {
         this.zone.run(() => {
           this.auth2 = auth;
           this.isLoaded$.next(true);
-          console.log('auth');
-          console.log(auth);
         });
       }, (err) => {
         console.error(err);

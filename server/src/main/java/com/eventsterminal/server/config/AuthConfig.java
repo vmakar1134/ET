@@ -11,14 +11,13 @@ public class AuthConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-                .antMatchers("/login", "/test/**")
+        http.csrf().ignoringAntMatchers("/auth/**")
+                .and()
+                .authorizeRequests()
+                .antMatchers("/auth/**")
                 .permitAll()
                 .anyRequest()
-                .authenticated()
-                .and()
-                .oauth2Login()
-                .loginPage("/login");
+                .authenticated();
     }
 
 }
