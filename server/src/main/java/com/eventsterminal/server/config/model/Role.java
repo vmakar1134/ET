@@ -11,7 +11,19 @@ public class Role {
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "NAME", unique = true)
     private Roles name;
+
+    public Role() {
+    }
+
+    public Role(Roles name) {
+        this.name = name;
+    }
+
+    public void setName(Roles name) {
+        this.name = name;
+    }
 
     public Long getId() {
         return id;

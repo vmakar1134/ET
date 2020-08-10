@@ -60,7 +60,8 @@ public class SwaggerConfig {
     private SecurityContext securityContext() {
         return SecurityContext.builder()
                 .securityReferences(defaultAuth())
-                .forPaths(PathSelectors.regex(DEFAULT_INCLUDE_PATTERN))
+                // TODO: 8/7/20 deprecated
+//                .forPaths(PathSelectors.regex(DEFAULT_INCLUDE_PATTERN))
                 .build();
     }
 

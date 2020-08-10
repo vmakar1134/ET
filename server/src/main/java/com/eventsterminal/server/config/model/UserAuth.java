@@ -1,53 +1,39 @@
 package com.eventsterminal.server.config.model;
 
 
+import com.eventsterminal.server.domain.UserProfile;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class UserAuth {
+public class UserAuth extends UserPrincipal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Email
+    private String username;
+
     private String password;
 
-    @Email
-    private String email;
+    @Column(columnDefinition = "NUMERIC(25)")
+    private BigInteger socialId;
 
-    private boolean isAccountNonExpired = true;
-
-    private boolean isAccountNonLocked = true;
-
-    private boolean isCredentialsNonExpired = true;
-
-    private boolean isEnabled = true;
-
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinTable(name = "usersRoles",
             joinColumns = @JoinColumn(name = "userAuth_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles = new ArrayList<>();
 
-    public UserAuth() {
-    }
+    @OneToOne(mappedBy = "userAuth", cascade = CascadeType.ALL)
+    private UserProfile userProfile;
 
-    public UserAuth(String password, String email) {
-        this.password = password;
-        this.email = email;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
+    @Override
     public String getPassword() {
         return password;
     }
@@ -56,52 +42,46 @@ public class UserAuth {
         this.password = password;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public boolean isAccountNonExpired() {
-        return isAccountNonExpired;
-    }
-
-    public void setAccountNonExpired(boolean accountNonExpired) {
-        isAccountNonExpired = accountNonExpired;
-    }
-
-    public boolean isAccountNonLocked() {
-        return isAccountNonLocked;
-    }
-
-    public void setAccountNonLocked(boolean accountNonLocked) {
-        isAccountNonLocked = accountNonLocked;
-    }
-
-    public boolean isCredentialsNonExpired() {
-        return isCredentialsNonExpired;
-    }
-
-    public void setCredentialsNonExpired(boolean credentialsNonExpired) {
-        isCredentialsNonExpired = credentialsNonExpired;
-    }
-
-    public boolean isEnabled() {
-        return isEnabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
-    }
-
     public List<Role> getRoles() {
         return roles;
     }
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public UserProfile getUserProfile() {
+        return userProfile;
+    }
+
+    public void setUserProfile(UserProfile userProfile) {
+        this.userProfile = userProfile;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public BigInteger getSocialId() {
+        return socialId;
+    }
+
+    public void setSocialId(BigInteger socialId) {
+        this.socialId = socialId;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String login) {
+        this.username = login;
     }
 
 }

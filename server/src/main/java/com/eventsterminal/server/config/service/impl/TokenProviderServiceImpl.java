@@ -1,19 +1,19 @@
-package com.eventsterminal.server.config;
+package com.eventsterminal.server.config.service.impl;
 
 import com.eventsterminal.server.config.model.UserPrincipal;
+import com.eventsterminal.server.config.service.TokenProvideService;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import java.security.SignatureException;
 import java.util.Date;
 import java.util.logging.Logger;
 
 @Component
-public class TokenProvider {
+public class TokenProviderServiceImpl implements TokenProvideService {
 
-    private static final Logger LOGGER = Logger.getLogger(TokenProvider.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TokenProviderServiceImpl.class.getName());
 
     @Value("${app.jwtSecret}")
     private String SECRET_KEY;
@@ -21,6 +21,7 @@ public class TokenProvider {
     @Value("${app.jwtExpirationTime}")
     private Long EXPIRATION_TIME;
 
+    @Override
     public String generateToken(Authentication authentication) {
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
 
@@ -32,19 +33,16 @@ public class TokenProvider {
                 .compact();
     }
 
-    public Long getUserAuthIdFromToken(String token) {
-        Claims body = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
-
-        return Long.parseLong(body.getSubject());
+    @Override
+    public Long getUserIdFromClaims(Jws<Claims> claimsJws) {
+        return Long.parseLong(claimsJws.getBody().getSubject());
     }
 
-    public boolean validateToken(String token) {
+    @Override
+    public Jws<Claims> getClaimsJws(String token) {
+        Jws<Claims> claimsJws = null;
         try {
-            Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
-            return true;
+            claimsJws = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
         } catch (MalformedJwtException e) {
             LOGGER.warning("Invalid jwt token");
         } catch (ExpiredJwtException e) {
@@ -56,8 +54,7 @@ public class TokenProvider {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return false;
+        return claimsJws;
     }
 
 }

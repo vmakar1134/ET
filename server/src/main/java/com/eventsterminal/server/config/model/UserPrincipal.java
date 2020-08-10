@@ -16,18 +16,22 @@ public class UserPrincipal implements UserDetails {
 
     private String password;
 
-    private boolean isAccountNonExpired;
+    private boolean isAccountNonExpired = true;
 
-    private boolean isAccountNonLocked;
+    private boolean isAccountNonLocked = true;
 
-    private boolean isCredentialsNonExpired;
+    private boolean isCredentialsNonExpired = true;
 
-    private boolean isEnabled;
+    private boolean isEnabled = true;
 
-    private Collection<? extends GrantedAuthority> authorities;
+    private List<? extends GrantedAuthority> authorities;
+
+    public UserPrincipal() {
+    }
 
     public UserPrincipal(Long id, String login, String password, boolean isAccountNonExpired, boolean isAccountNonLocked,
-                         boolean isCredentialsNonExpired, boolean isEnabled, Collection<? extends GrantedAuthority> authorities) {
+                         boolean isCredentialsNonExpired, boolean isEnabled,
+                         List<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.login = login;
         this.password = password;
@@ -38,30 +42,31 @@ public class UserPrincipal implements UserDetails {
         this.authorities = authorities;
     }
 
-    public static UserPrincipal create(UserAuth user) {
+    public static UserPrincipal valueOf(UserAuth user) {
         List<GrantedAuthority> authorities = user.getRoles()
                 .stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().toString()))
                 .collect(Collectors.toList());
 
-        return new UserPrincipal(user.getId(),
-                user.getEmail(),
+        return new UserPrincipal(
+                user.getId(),
+                user.getUsername(),
                 user.getPassword(),
                 user.isAccountNonExpired(),
                 user.isAccountNonLocked(),
                 user.isCredentialsNonExpired(),
                 user.isEnabled(),
-                authorities
-        );
-    }
-
-    public Collection<? extends GrantedAuthority> getRoles() {
-        return authorities;
+                authorities);
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
     }
 
     @Override
@@ -89,17 +94,16 @@ public class UserPrincipal implements UserDetails {
         return isEnabled;
     }
 
-    public Long getId() {
-        return id;
-    }
-
     public String getLogin() {
         return login;
     }
 
-    @Override
-    public String getPassword() {
-        return password;
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
 }

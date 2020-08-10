@@ -1,10 +1,13 @@
-package com.eventsterminal.server.config;
+package com.eventsterminal.server.config.filter;
 
+import com.eventsterminal.server.config.model.UserPrincipal;
 import com.eventsterminal.server.config.service.impl.CustomUserDetailsService;
+import com.eventsterminal.server.config.service.impl.TokenProviderServiceImpl;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -19,13 +22,14 @@ import java.io.IOException;
 @Component
 public class RequestProcessingJWTFilter extends OncePerRequestFilter {
 
-    private final TokenProvider tokenProvider;
+    private final TokenProviderServiceImpl tokenProviderService;
 
     private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    public RequestProcessingJWTFilter(TokenProvider tokenProvider, CustomUserDetailsService customUserDetailsService) {
-        this.tokenProvider = tokenProvider;
+    public RequestProcessingJWTFilter(TokenProviderServiceImpl tokenProviderService,
+                                      CustomUserDetailsService customUserDetailsService) {
+        this.tokenProviderService = tokenProviderService;
         this.customUserDetailsService = customUserDetailsService;
     }
 
@@ -33,10 +37,11 @@ public class RequestProcessingJWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String jwt = getJwtFromRequest(request);
         try {
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                Long id = tokenProvider.getUserAuthIdFromToken(jwt);
-                UserDetails userDetails = customUserDetailsService.loadUserById(id);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+            Jws<Claims> claimsJws = tokenProviderService.getClaimsJws(jwt);
+            if (StringUtils.hasText(jwt) && claimsJws != null) {
+                Long userAuthId = tokenProviderService.getUserIdFromClaims(claimsJws);
+                UserPrincipal userPrincipal = (UserPrincipal) customUserDetailsService.loadUserById(userAuthId);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userPrincipal, "", userPrincipal.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
@@ -46,6 +51,7 @@ public class RequestProcessingJWTFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    // TODO: 8/10/20 refactor bearerToken.substring(7)
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
